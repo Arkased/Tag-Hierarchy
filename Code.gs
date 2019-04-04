@@ -3,13 +3,13 @@
 // to work with tags in specific columns, adjusting the spreadsheet will require inputRange
 // and/or outputRange to be adjusted as well.
 function updateTags() {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Questions'); // sheet with tags
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Questions'); // sheet with tags, replace 'Questions' with name of sheet
   var inputRange = sheet.getRange(2, 3, sheet.getLastRow() - 1, 1); // assumes input is in column C with header row
-  var outputRange = sheet.getRange(2, 4, sheet.getLastRow() - 1, 1) // assumes input is in column D with header row
+  var outputRange = sheet.getRange(2, 4, sheet.getLastRow() - 1, 1); // assumes input is in column D with header row
   
   var allTags = inputRange.getDisplayValues();
   var root = generateTree(); // tree containing tag heirarchy
-  var updatedTags = []
+  var updatedTags = [];
   
   // for each question/row
   for (var i = 0; i < allTags.length; i++)
@@ -39,6 +39,41 @@ function updateTags() {
     updatedTags.push([tags.join(' ')]);
   }
   outputRange.setValues(updatedTags);
+}
+
+// Creates a new sheet with rows which match selected tags. Assumes tags to check are in column D.
+function getEntriesWithTags() {
+  var searchTags = ['micronutrient'] // tags with which to match
+  var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  var inputSheet = spreadsheet.getSheetByName('Questions');
+  var inputRows = inputSheet.getRange(2, 1, inputSheet.getLastRow() - 1, inputSheet.getLastColumn()).getValues();
+  var outputRows = [];
+  // for each question/row
+  for (var i = 0; i < inputRows.length; i++)
+  {
+    var tags = inputRows[i][3].split(' ');
+    
+    // for each tag in searchTags
+    for (var j = 0; j < searchTags.length; j++)
+    {
+      if (tags.indexOf(searchTags[j]) >= 0){ // if tags of given row contains given tag in searchTag 
+        outputRows.push(inputRows[i]);
+        break;
+      }
+    }
+  }
+  if (outputRows.length > 0){
+    var outputSheet = spreadsheet.insertSheet({template: inputSheet}).clear();
+    
+    // inserts header
+    outputSheet.getRange(1, 1, 1, inputSheet.getLastColumn()).setValues(inputSheet.getRange(1, 1, 1, inputSheet.getLastColumn()).getValues());
+    
+    // sets values
+    outputSheet.getRange(2, 1, outputRows.length, inputSheet.getLastColumn()).setValues(outputRows);
+  }
+  else {
+    Logger.log('no questions found');
+  }
 }
 
 // Returns an array of tags of data's ancestors, and data itself.
@@ -74,7 +109,7 @@ function getParentTags(data, node){
     if (tags.indexOf(data) >= 0 && node.data != 'root') {
         tags.push(node.data);
     }
-    return tags
+    return tags;
   }
   
 }
@@ -121,7 +156,7 @@ function generateTree() {
   
   
   var regulation = addNewChild(root, 'regulation');
-  return root
+  return root;
 }
 
 // Node object for tree
@@ -137,12 +172,12 @@ function addNewChild(parentNode, childObject) {
   // Establishes parent-child relationship between two nodes
   function addChild(parentNode, childNode) {
     parentNode.children.push(childNode);
-    childNode.parent = parentNode
+    childNode.parent = parentNode;
   }
   
   var childNode = new Node(childObject);
   addChild(parentNode, childNode);
-  return childNode
+  return childNode;
 }
 
 // Creates nodes for each element of childObjects, adds it as a child of parent,
