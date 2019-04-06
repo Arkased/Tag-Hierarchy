@@ -41,8 +41,7 @@ function updateTags() {
   outputRange.setValues(updatedTags);
 }
 
-// Creates a new sheet with rows which match selected tags. Assumes tags to check are in column D.
-// Also automatically calls generateQuiz(), generating a quiz with the questions found.
+// Creates a quiz using questions which match specified tags.
 function generateQuiz() {
   var searchTags = ['digestion'] // tags with which to match
   var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
@@ -64,6 +63,46 @@ function generateQuiz() {
         break;
       }
     }
+  }
+}
+
+// Creates a new sheet with rows which match selected tags. Assumes tags to check are in column D.
+function getEntriesWithTags() {
+  var searchTags = ['micronutrient'] // tags with which to match
+  var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  var inputSheet = spreadsheet.getSheetByName('Questions');
+  var inputRows = inputSheet.getRange(2, 1, inputSheet.getLastRow() - 1, inputSheet.getLastColumn()).getValues();
+  var outputRows = [];
+  // for each question/row
+  for (var i = 0; i < inputRows.length; i++)
+  {
+    var tags = inputRows[i][3].split(' ');
+
+    // for each tag in searchTags
+    for (var j = 0; j < searchTags.length; j++)
+    {
+      if (tags.indexOf(searchTags[j]) >= 0){ // if tags of given row contains given tag in searchTag 
+        outputRows.push(inputRows[i]);
+        break;
+      }
+    }
+  }
+  if (outputRows.length > 0){
+    var outputSheet = spreadsheet.insertSheet({template: inputSheet}).clear();
+    var sheetName = searchTags.join(' ');
+    
+    if (spreadsheet.getSheetByName(sheetName) === null){
+      outputSheet.setName(sheetName);
+    }
+
+    // inserts header
+    outputSheet.getRange(1, 1, 1, inputSheet.getLastColumn()).setValues(inputSheet.getRange(1, 1, 1, inputSheet.getLastColumn()).getValues());
+
+    // sets values
+    outputSheet.getRange(2, 1, outputRows.length, inputSheet.getLastColumn()).setValues(outputRows);
+  }
+  else {
+    Logger.log('no questions found');
   }
 }
 
