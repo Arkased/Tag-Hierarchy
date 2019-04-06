@@ -42,12 +42,14 @@ function updateTags() {
 }
 
 // Creates a new sheet with rows which match selected tags. Assumes tags to check are in column D.
-function getEntriesWithTags() {
-  var searchTags = ['micronutrient'] // tags with which to match
+// Also automatically calls generateQuiz(), generating a quiz with the questions found.
+function generateQuiz() {
+  var searchTags = ['digestion'] // tags with which to match
   var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
   var inputSheet = spreadsheet.getSheetByName('Questions');
   var inputRows = inputSheet.getRange(2, 1, inputSheet.getLastRow() - 1, inputSheet.getLastColumn()).getValues();
-  var outputRows = [];
+  var form = FormApp.create(searchTags.join(' ') + ' Quiz').setIsQuiz(true).setShuffleQuestions(true).setRequireLogin(false).setPublishingSummary(true);
+  
   // for each question/row
   for (var i = 0; i < inputRows.length; i++)
   {
@@ -57,22 +59,11 @@ function getEntriesWithTags() {
     for (var j = 0; j < searchTags.length; j++)
     {
       if (tags.indexOf(searchTags[j]) >= 0){ // if tags of given row contains given tag in searchTag 
-        outputRows.push(inputRows[i]);
+        var feedback = FormApp.createFeedback().setText(inputRows[i][1]).build();
+        form.addTextItem().setPoints(1).setTitle(inputRows[i][0]).setGeneralFeedback(feedback);
         break;
       }
     }
-  }
-  if (outputRows.length > 0){
-    var outputSheet = spreadsheet.insertSheet({template: inputSheet}).clear();
-    
-    // inserts header
-    outputSheet.getRange(1, 1, 1, inputSheet.getLastColumn()).setValues(inputSheet.getRange(1, 1, 1, inputSheet.getLastColumn()).getValues());
-    
-    // sets values
-    outputSheet.getRange(2, 1, outputRows.length, inputSheet.getLastColumn()).setValues(outputRows);
-  }
-  else {
-    Logger.log('no questions found');
   }
 }
 
