@@ -43,7 +43,7 @@ function updateTags() {
 
 // Creates a quiz using questions which match specified tags.
 function generateQuiz() {
-  var searchTags = ['digestion'] // tags with which to match
+  var searchTags = ['root'] // tags with which to match
   var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
   var inputSheet = spreadsheet.getSheetByName('Questions');
   var inputRows = inputSheet.getRange(2, 1, inputSheet.getLastRow() - 1, inputSheet.getLastColumn()).getValues();
@@ -135,8 +135,8 @@ function getParentTags(data, node){
       }
     }
     
-    // adds label of node to tags if node is an ancestor of data and the label is not 'root'
-    if (tags.indexOf(data) >= 0 && node.data != 'root') {
+    // adds label of node to tags if node is an ancestor of data
+    if (tags.indexOf(data) >= 0) {
         tags.push(node.data);
     }
     return tags;
@@ -154,38 +154,50 @@ function getParentTagsTest() {
 // this function will need to be manually modified.
 function generateTree() {
   var root = new Node('root');
-  // body_function branch
+  addNewChildren(root, ['regulation', 'physical']);
+  
+  var psychology = addNewChild(root, 'psychology');
+  addNewChildren(psychology, ['disorder', 'intake_regulation']);
+  // physiology branch
   { 
-    var bodyFunction = addNewChild(root, 'body_function');
-    addNewChildren(bodyFunction, ['cell_function']);
+    var physiology = addNewChild(root, 'physiology');
+    addNewChildren(physiology, ['cell_function']);
     
-    var digestion = addNewChild(bodyFunction, 'digestion');
+    var digestion = addNewChild(physiology, 'digestion');
     addNewChildren(digestion, ['enzyme', 'stomach', 'intestines']);
     
-    var nutrient = addNewChild(bodyFunction, 'nutrient');
+    var nutrient = addNewChild(physiology, 'nutrient');
+    addNewChildren(nutrient, ['phytochemical']);
     
     var macronutrient = addNewChild(nutrient, 'macronutrient');
     addNewChildren(macronutrient, ['carbohydrate', 'lipid', 'protein']);
     
     var micronutrient = addNewChild(nutrient, 'micronutrient');
     
-    var waterSoluble = addNewChild(micronutrient, 'water_soluble');
+    var waterSoluble = addNewChild(micronutrient, 'water-soluble');
+    addNewChildren(waterSoluble, ['niacin', 'folate', 'pyridoxine', 'riboflavin', 'thiamin', 'biotin', 'B12', 'C', 'pantothenic']);
     
-    var fatSoluble = addNewChild(micronutrient, 'fat_soluble');
-    addNewChildren(fatSoluble, ['vitamin_A', 'vitamin_D', 'vitamin_E', 'vitamin_K']);
+    var fatSoluble = addNewChild(micronutrient, 'fat-soluble');
+    addNewChildren(fatSoluble, ['A', 'D', 'E', 'K']);
     
     var mineral = addNewChild(micronutrient, 'mineral');
-    addNewChildren(mineral, ['phosphorus', 'calcium']);
     
-    var wholeBodyFunction = addNewChild(bodyFunction, 'whole_body_function');
+    var major = addNewChild(mineral, 'major');
+    addNewChildren(major, ['calcium', 'phosphorus']);
+    
+    var trace = addNewChild(mineral, 'trace');
+    addNewChildren(trace, ['zinc', 'iron', 'copper', 'iodide']);
+    
+    var wholeBodyFunction = addNewChild(physiology, 'whole_body_function');
     addNewChildren(wholeBodyFunction, ['hormone', 'energy']);
+    
+    var consumption = addNewChild(physiology, 'consumption');
+    addNewChildren(consumption, ['diet', 'weight', 'malnutrition']);
+    
+    var food = addNewChild(consumption, 'food')
+    addNewChildren(food, ['alcohol']);
   }
   
-  var consumption = addNewChild(root, 'consumption');
-  addNewChildren(consumption, ['food']);
-  
-  
-  var regulation = addNewChild(root, 'regulation');
   return root;
 }
 
